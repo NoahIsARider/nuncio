@@ -1,6 +1,7 @@
 # nuncio
 
 **A courier between sovereign forges. Never the owner of your history.**
+[![ci](https://github.com/NoahIsARider/nuncio/actions/workflows/ci.yml/badge.svg)](https://github.com/NoahIsARider/nuncio/actions/workflows/ci.yml)
 
 `nuncio` keeps one repository in sync across GitHub, GitLab, Codeberg, SourceHut and Tangled,
 treating every forge as a peer. It does not elect a hub. It does not delete refs. It does not
