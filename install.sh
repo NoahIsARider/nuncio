@@ -50,24 +50,34 @@ fetch() {
 
 tmp="$(mktemp -d "${TMPDIR:-/tmp}/nuncio.XXXXXX")" || die "cannot create a temporary directory"
 trap 'rm -rf "$tmp"' EXIT INT TERM
+# Under MSYS/git-bash the native curl.exe cannot write to the /tmp path mktemp
+# returns, while MSYS tar cannot read a C:/ path (it parses the drive as a
+# remote host). Keep both spellings of the same directory.
+native_tmp="$tmp"
+if command -v cygpath >/dev/null 2>&1; then
+	native_tmp="$(cygpath -m "$tmp")"
+fi
 
 say "downloading ${url}"
 if command -v curl >/dev/null 2>&1; then
-	curl -fsSL "$url" -o "$tmp/$asset" || die "download failed"
+	curl -fsSL "$url" -o "$native_tmp/$asset" || die "download failed"
 else
-	wget -qO "$tmp/$asset" "$url" || die "download failed"
+	wget -qO "$native_tmp/$asset" "$url" || die "download failed"
 fi
 
 if command -v sha256sum >/dev/null 2>&1; then
 	# sha256sum writes "hash  file" in text mode and "hash *file" in binary
 	# mode (the Windows default), so strip the asterisk before comparing.
-	want="$(fetch "${base}/checksums.txt" 2>/dev/null | awk -v a="$asset" '{ f=$2; sub(/^\*/, "", f); if (f == a) { print $1; exit } }' || true)"
+	sums="$(fetch "${base}/checksums.txt" 2>/dev/null || true)"
+	want="$(printf '%s\n' "$sums" | awk -v a="$asset" '{ f=$2; sub(/^\*/, "", f); if (f == a) { print $1; exit } }')"
 	if [ -n "${want:-}" ]; then
 		got="$(sha256sum "$tmp/$asset" | awk '{ print $1 }')"
 		[ "$want" = "$got" ] || die "checksum mismatch for $asset"
 		say "checksum ok"
+	elif [ -z "${sums:-}" ]; then
+		say "warning: could not fetch checksums.txt; installing WITHOUT verification"
 	else
-		say "no checksum published for $asset; continuing"
+		say "warning: checksums.txt does not list $asset; installing WITHOUT verification"
 	fi
 fi
 
