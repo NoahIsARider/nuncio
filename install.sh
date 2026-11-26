@@ -59,7 +59,9 @@ else
 fi
 
 if command -v sha256sum >/dev/null 2>&1; then
-	want="$(fetch "${base}/checksums.txt" 2>/dev/null | awk -v a="$asset" '$2 == a { print $1; exit }' || true)"
+	# sha256sum writes "hash  file" in text mode and "hash *file" in binary
+	# mode (the Windows default), so strip the asterisk before comparing.
+	want="$(fetch "${base}/checksums.txt" 2>/dev/null | awk -v a="$asset" '{ f=$2; sub(/^\*/, "", f); if (f == a) { print $1; exit } }' || true)"
 	if [ -n "${want:-}" ]; then
 		got="$(sha256sum "$tmp/$asset" | awk '{ print $1 }')"
 		[ "$want" = "$got" ] || die "checksum mismatch for $asset"

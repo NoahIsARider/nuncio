@@ -20,6 +20,9 @@ vet:
 	go vet ./...
 
 # Produces exactly the asset names install.sh expects, plus checksums.txt.
+# sha256sum emits "hash *file" in binary mode (the Windows default) and
+# "hash  file" in text mode, so normalise before publishing or install.sh
+# silently skips verification.
 release:
 	rm -rf dist
 	mkdir -p dist
@@ -31,7 +34,7 @@ release:
 		tar -C dist/$$name -czf dist/$$name.tar.gz . || exit 1; \
 		rm -rf dist/$$name; \
 	done
-	cd dist && sha256sum *.tar.gz > checksums.txt
+	cd dist && sha256sum *.tar.gz | sed 's/ \*/  /' > checksums.txt
 
 clean:
 	rm -rf bin dist
