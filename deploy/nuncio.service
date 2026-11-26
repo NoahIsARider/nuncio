@@ -1,0 +1,28 @@
+[Unit]
+Description=nuncio — multi-forge git courier
+Documentation=https://github.com/NoahIsARider/nuncio
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+User=nuncio
+Group=nuncio
+EnvironmentFile=/etc/nuncio/env
+ExecStart=/usr/local/bin/nuncio -c /etc/nuncio/nuncio.toml serve
+Restart=always
+RestartSec=5
+StateDirectory=nuncio
+WorkingDirectory=/var/lib/nuncio
+NoNewPrivileges=true
+ProtectSystem=strict
+ProtectHome=true
+PrivateTmp=true
+PrivateDevices=true
+ReadWritePaths=/var/lib/nuncio
+# If your SSH keys live in /home, either copy them to
+# /var/lib/nuncio/.ssh or change ProtectHome deliberately.
+# ProtectHome=read-only
+
+[Install]
+WantedBy=multi-user.target

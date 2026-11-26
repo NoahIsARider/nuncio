@@ -1,0 +1,18 @@
+# Normalise line endings. Without this a Windows checkout with core.autocrlf=true
+# rewrites install.sh and the systemd unit to CRLF, and the shebang stops working.
+* text=auto eol=lf
+
+*.sh    text eol=lf
+*.service text eol=lf
+*.yml   text eol=lf
+*.yaml  text eol=lf
+*.toml  text eol=lf
+Dockerfile text eol=lf
+Makefile   text eol=lf
+*.go    text eol=lf
+*.md    text eol=lf
+
+*.png binary
+*.jpg binary
+*.gz  binary
+*.exe binary

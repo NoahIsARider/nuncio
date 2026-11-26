@@ -1,0 +1,67 @@
+# Three forges, one declared authority per ref, and a group selector.
+# Authority is intent, not a licence to overwrite without a snapshot.
+version = 1
+
+[state]
+path = ".nuncio/state.db"
+cache = ".nuncio/repos"
+
+[daemon]
+listen = "127.0.0.1:8787"
+interval = "6h"
+concurrency = 4
+dry_run = true
+
+[identity]
+name = "nuncio"
+email = "nuncio@localhost"
+
+[platforms.github]
+kind = "github"
+api = "https://api.github.com"
+git = "https://github.com"
+auth = "env:GITHUB_TOKEN"
+webhook_secret = "env:GITHUB_WEBHOOK_SECRET"
+
+[platforms.gitlab]
+kind = "gitlab"
+api = "https://gitlab.com/api/v4"
+git = "ssh://git@gitlab.com"
+auth = "env:GITLAB_TOKEN"
+
+[platforms.codeberg]
+kind = "forgejo"
+api = "https://codeberg.org/api/v1"
+git = "ssh://git@codeberg.org"
+auth = "ssh:codeberg"
+
+[policy.default]
+platforms = ["github", "gitlab", "codeberg"]
+authority = "none"
+on_divergence = "park"
+on_delete = "ignore"
+snapshot = true
+verify = true
+
+[policy.paper]
+platforms = ["github", "gitlab"]
+authority = "github"
+on_divergence = "park"
+
+[groups.papers]
+policy = "paper"
+select = { topic = "paper", platform = "github" }
+
+[repos."alice/site"]
+policy = "default"
+
+[repos."alice/site".remote]
+github = "alice/site"
+gitlab = "alice/site"
+codeberg = "alice/site"
+
+[repos."alice/site".refs."refs/heads/main"]
+authority = "github"
+
+[repos."alice/notes"]
+policy = "default"

@@ -1,0 +1,43 @@
+# Two forges, no hub. Copy to nuncio.toml and fill in the coordinates.
+version = 1
+
+[state]
+path = ".nuncio/state.db"
+cache = ".nuncio/repos"
+
+[daemon]
+listen = ""              # timer only: no HTTP listener at all
+interval = "15m"
+concurrency = 4
+dry_run = true           # turn off with: nuncio config set daemon.dry_run false
+
+[identity]
+name = "nuncio"
+email = "nuncio@localhost"
+
+[platforms.github]
+kind = "github"
+api = "https://api.github.com"
+git = "https://github.com"
+auth = "env:GITHUB_TOKEN"
+
+[platforms.codeberg]
+kind = "forgejo"
+api = "https://codeberg.org/api/v1"
+git = "ssh://git@codeberg.org"
+auth = "ssh:codeberg"    # ~/.ssh/codeberg
+
+[policy.default]
+platforms = ["github", "codeberg"]
+authority = "none"       # no forge wins by default
+on_divergence = "park"   # snapshot both tips, hand the decision to a human
+on_delete = "ignore"     # a deletion is a fact to report, not to propagate
+snapshot = true
+verify = true
+
+[repos."alice/example"]
+policy = "default"
+
+[repos."alice/example".remote]
+github = "alice/example"
+codeberg = "alice/example"

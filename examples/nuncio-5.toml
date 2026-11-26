@@ -1,0 +1,86 @@
+# All five forges. This file is a reference for every block nuncio knows
+# about; delete what you do not operate. The fake public key at the bottom is
+# a placeholder and must be replaced with your own.
+version = 1
+
+[state]
+path = ".nuncio/state.db"
+cache = ".nuncio/repos"
+
+[daemon]
+listen = "127.0.0.1:8787"
+interval = "15m"
+concurrency = 4
+dry_run = true
+
+[identity]
+name = "nuncio"
+email = "nuncio@localhost"
+
+[platforms.github]
+kind = "github"
+api = "https://api.github.com"
+git = "https://github.com"
+auth = "env:GITHUB_TOKEN"
+webhook_secret = "env:GITHUB_WEBHOOK_SECRET"
+
+[platforms.gitlab]
+kind = "gitlab"
+api = "https://gitlab.com/api/v4"
+git = "ssh://git@gitlab.com"
+auth = "env:GITLAB_TOKEN"
+webhook_secret = "env:GITLAB_WEBHOOK_TOKEN"
+
+[platforms.codeberg]
+kind = "forgejo"
+api = "https://codeberg.org/api/v1"
+git = "ssh://git@codeberg.org"
+auth = "ssh:codeberg"
+webhook_secret = "env:CODEBERG_WEBHOOK_SECRET"
+
+[platforms.srht]
+kind = "sourcehut"
+api = "https://git.sr.ht/query"
+git = "ssh://git@git.sr.ht"
+auth = "env:SRHT_TOKEN"
+pre_receive_gate = true
+# Warning only until the gate is verified as available to third-party
+# operators. See docs/ADAPTERS.md, spike S1.
+webhook_public_key = "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA="
+
+[platforms.tangled]
+kind = "tangled"
+knot = "tangled.org"
+git = "ssh://git@tangled.org"
+owner = "alice"
+auth = "ssh:tangled"
+firehose = "wss://bsky.network/xrpc/com.atproto.sync.subscribeRepos"
+
+[policy.default]
+platforms = ["github", "gitlab", "codeberg", "srht", "tangled"]
+authority = "none"
+on_divergence = "park"
+on_delete = "ignore"
+snapshot = true
+verify = true
+default_branch = "main"
+
+[groups.site]
+policy = "default"
+select = { visibility = "public", platform = "github" }
+
+[repos."alice/example"]
+policy = "default"
+
+[repos."alice/example".remote]
+github = "alice/example"
+gitlab = "alice/example"
+codeberg = "alice/example"
+srht = "~alice/example"
+tangled = "alice/example"
+
+[repos."alice/example".refs."refs/heads/main"]
+authority = "github"
+
+# Tangled owns refs/cobs/*, refs/cob-checkpoints/*, refs/hidden/* and
+# refs/atproto/*. nuncio skips them and says so; it does not guess.

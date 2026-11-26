@@ -1,0 +1,11 @@
+# Local state created by running nuncio against this repository.
+/.nuncio/
+/nuncio.toml
+/bin/
+/dist/
+
+# Editor and OS noise.
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db

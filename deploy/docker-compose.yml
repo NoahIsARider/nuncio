@@ -1,0 +1,40 @@
+# Four deployment shapes. The default is timer-only: no ingress, no public
+# address, no webhooks. Uncomment one shape at a time.
+#
+#   1. timer only       — default as written
+#   2. timer + webhooks — uncomment ports and set listen = "0.0.0.0:8787"
+#   3. firehose only    — keep ports commented; Tangled needs outbound only
+#   4. full             — webhooks + firehose + timer backstop
+
+services:
+  nuncio:
+    build:
+      context: ..
+      dockerfile: deploy/Dockerfile
+    image: nuncio:local
+    command: ["-c", "/etc/nuncio/nuncio.toml", "serve"]
+    volumes:
+      - ../nuncio.toml:/etc/nuncio/nuncio.toml:ro
+      - nuncio-state:/var/lib/nuncio
+      # SSH identities for the forges you push over SSH:
+      - ${HOME}/.ssh:/var/lib/nuncio/.ssh:ro
+    environment:
+      - GITHUB_TOKEN
+      - GITLAB_TOKEN
+      - FORGEJO_TOKEN
+      - SRHT_TOKEN
+      - TANGLED_TOKEN
+      - GITHUB_WEBHOOK_SECRET
+    restart: unless-stopped
+    # Shape 2 and 4: publish loopback only; terminate TLS in front.
+    # ports:
+    #   - "127.0.0.1:8787:8787"
+    healthcheck:
+      test: ["CMD", "wget", "-qO-", "http://127.0.0.1:8787/healthz"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 10s
+
+volumes:
+  nuncio-state:
