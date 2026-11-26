@@ -7,9 +7,45 @@ same `caps.Capabilities` value that `nuncio doctor` prints.
 
 ## Verification status
 
-This build was produced without live forge credentials. No request in this
-repository was sent to github.com, gitlab.com, codeberg.org, git.sr.ht or a
-Tangled knot. What *was* verified:
+### Live (2026-11-26)
+
+Exercised against github.com, gitlab.com and git.gay with real tokens. Every
+line below was read back from the forge, never inferred from an exit code:
+
+- `nuncio doctor` prints `api ok` for all three, from the live API.
+- GitHub → GitLab: a repository that existed only on GitHub was created on
+  GitLab and its `main` mirrored across; both sides then reported the same SHA.
+- GitLab → GitHub: a commit pushed to GitLab alone fast-forwarded GitHub.
+- GitHub → git.gay: the same, including creating the Forgejo repository through
+  its API.
+- Divergence: neither branch moved, both tips were written to
+  `refs/nuncio/snapshot/main/<ts>` on their own remotes (confirmed with
+  `git ls-remote`), the report named both SHAs, `lost commits` was 0, exit 1.
+- `plan`, `sync`, `report`, `lost` and `config set` behaved as documented.
+
+Partial:
+
+- **Codeberg.** No API token existed on the test machine, and codeberg.org has
+  push-to-create disabled, so no scratch repository could be created and the
+  Forgejo git path was not exercised there. `doctor` did report `api FAIL` with
+  the exact 401 and `sync` exited 2 rather than pretending to work, which is the
+  behaviour that matters when a token is missing.
+
+Not exercised live: SourceHut repositories (no PAT; `doctor` reports the 401
+correctly), Tangled refs, webhooks, the firehose, the pre-receive gate, merge
+mode, protected-branch toggling, LFS.
+
+That run found two defects, both fixed in v0.1.1. GitLab project creation sent a
+user id as `namespace_id` (`namespace_id` only accepts a group, so GitLab
+answered `namespace is not valid`), and `HEAD` was planned as a pushable ref
+(every forge answers "you must fully qualify the ref"). **v0.1.0 cannot complete
+a sync against any repository that has a HEAD.**
+
+### Hermetic
+
+The request and response shapes below were written without live forge
+credentials, so read them as intent rather than observed behaviour. What is
+covered without a network:
 
 - every adapter is exercised against `httptest` fixtures with the request and
   response shapes listed below, including error mapping (401/403/404/409/422);

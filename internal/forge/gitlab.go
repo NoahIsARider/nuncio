@@ -114,18 +114,16 @@ func (g *gitlabAdapter) GetRepo(ctx context.Context, owner, name string) (Repo, 
 	return r.toRepo(), nil
 }
 
+// namespaceID resolves an owner to a GitLab *group* ID. It deliberately does
+// not fall back to the users endpoint: POST /projects only accepts a group ID
+// in namespace_id, and a personal namespace must be expressed by omitting the
+// field. Passing a user ID returns HTTP 400 {"namespace":["is not valid"]}.
 func (g *gitlabAdapter) namespaceID(ctx context.Context, owner string) (int64, error) {
 	var group struct {
 		ID int64 `json:"id"`
 	}
 	if err := g.api.do(ctx, http.MethodGet, "/groups/"+url.PathEscape(owner), nil, &group); err == nil && group.ID != 0 {
 		return group.ID, nil
-	}
-	var users []struct {
-		ID int64 `json:"id"`
-	}
-	if err := g.api.do(ctx, http.MethodGet, "/users?username="+url.QueryEscape(owner), nil, &users); err == nil && len(users) > 0 {
-		return users[0].ID, nil
 	}
 	return 0, nil
 }

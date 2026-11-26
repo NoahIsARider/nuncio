@@ -194,6 +194,13 @@ func (a *App) observe(ctx context.Context, spec RepoSpec, cacheRepo *cache.Repo)
 			if rr.SHA == "" {
 				continue
 			}
+			// HEAD is a symref, not a ref nuncio manages. Every forge rejects
+			// a push whose source is a bare commit into refs/heads/HEAD
+			// ("you must fully qualify the ref"), and the default branch is
+			// carried by repository metadata instead.
+			if !strings.HasPrefix(ref, "refs/") {
+				continue
+			}
 			if !strings.HasPrefix(ref, "refs/nuncio/") {
 				byRef[ref] = reconcile.Observation{Present: true, SHA: rr.SHA}
 			}
