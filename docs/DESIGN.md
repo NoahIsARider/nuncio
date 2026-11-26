@@ -842,7 +842,7 @@ Suggested thread skeleton (author writes the final copy):
 >    pre-receive hook — instead of pretending they're all the same `remote`.
 > 4. Single static binary, SQLite, works with no public address and no webhooks if you don't want
 >    them. `nuncio init`, `nuncio doctor`, `nuncio plan`, done.
-> 5. Source is on Tangled. Mirrors on GitHub and Codeberg. `nuncio` also syncs *to* SourceHut, which
+> 5. Source is on Tangled. Mirror on GitHub. `nuncio` also syncs *to* SourceHut, which
 >    is where this whole thing started.
 
 ---

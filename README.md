@@ -133,7 +133,7 @@ prints it for *your* tokens:
 
 ## Status
 
-Source lives on Tangled. Mirrors on GitHub and Codeberg. `nuncio` supports SourceHut as a sync
+Source lives on Tangled. Mirror on GitHub. `nuncio` supports SourceHut as a sync
 target, which is where the project started.
 
 > [!IMPORTANT]
